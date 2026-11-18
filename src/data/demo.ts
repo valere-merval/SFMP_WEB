@@ -63,6 +63,38 @@ export type IntegrationView = {
   endpoint: string
 }
 
+export type RoadmapView = {
+  version: string
+  title: string
+  features: string[]
+}
+
+export type HeatmapView = {
+  zone: string
+  intensity: string
+  trend: string
+  recommendation: string
+}
+
+export type DemandPeakView = {
+  window: string
+  level: string
+  action: string
+}
+
+export type RouteAdaptationView = {
+  corridor: string
+  change: string
+  reason: string
+}
+
+export type ContextualMessageView = {
+  audience: string
+  channel: string
+  message: string
+  timing: string
+}
+
 export const fanEvents: EventView[] = [
   {
     id: 'evt_madrid_final',
@@ -190,6 +222,48 @@ export const integrations: IntegrationView[] = [
   { id: 'int_kafka', name: 'Kafka', status: 'Connected', endpoint: 'kafka://local-cluster' },
   { id: 'int_minio', name: 'MinIO', status: 'Connected', endpoint: 'http://minio:9000' },
   { id: 'int_postgres', name: 'PostgreSQL', status: 'Connected', endpoint: 'jdbc:postgresql://db:5432/sfmp' },
+]
+
+export const roadmap: RoadmapView[] = [
+  {
+    version: 'Version 1',
+    title: 'MVP',
+    features: ['Gestion des événements', 'Découverte des événements', 'Planification des déplacements', 'Carte interactive', 'Réservation de transport démonstrative', 'Dashboard opérationnel', 'Collecte d\'analytics', 'Première démonstration prédictive'],
+  },
+  {
+    version: 'Version 2',
+    title: 'Pilot Platform',
+    features: ['Intégration des partenaires de transport', 'Gestion des chauffeurs et véhicules', 'Tracking GPS avec consentement', 'Notifications intelligentes', 'Intégration des données de trafic', 'Prévisions de demande', 'Gestion avancée des zones'],
+  },
+  {
+    version: 'Version 3',
+    title: 'Intelligent Mobility',
+    features: ['Machine Learning pour les prévisions', 'Heatmaps de mobilité', 'Détection des pics de demande', 'Optimisation des points de ramassage', 'Adaptation des itinéraires', 'Communications contextuelles', 'Analytics avancées'],
+  },
+]
+
+export const heatmaps: HeatmapView[] = [
+  { zone: 'Gate 12', intensity: 'Critical', trend: 'Rising', recommendation: 'Open additional corridor' },
+  { zone: 'Gate 14', intensity: 'High', trend: 'Stable', recommendation: 'Keep extra staff deployed' },
+  { zone: 'Metro Plaza', intensity: 'Medium', trend: 'Falling', recommendation: 'Maintain current routing' },
+]
+
+export const demandPeaks: DemandPeakView[] = [
+  { window: '18:00-18:45', level: 'High', action: 'Pre-position shuttles' },
+  { window: '20:55-21:40', level: 'Critical', action: 'Activate overflow lanes' },
+  { window: '22:15-22:45', level: 'Medium', action: 'Open return-trip wave' },
+]
+
+export const routeAdaptations: RouteAdaptationView[] = [
+  { corridor: 'Airport Corridor', change: 'Reroute via Ring Road', reason: 'Traffic slowdown detected' },
+  { corridor: 'North Zone', change: 'Shorten shuttle loop', reason: 'Demand concentrated at gates' },
+  { corridor: 'Fan Village', change: 'Add walking guidance', reason: 'Pedestrian flow is under capacity' },
+]
+
+export const contextualMessages: ContextualMessageView[] = [
+  { audience: 'Fans near Gate 12', channel: 'Push', message: 'Use Gate 14 for faster entry.', timing: 'Now' },
+  { audience: 'Late arrivals', channel: 'SMS', message: 'Your shuttle departs in 12 minutes.', timing: 'T-12m' },
+  { audience: 'Drivers', channel: 'In-app', message: 'Switch to adaptive route A due to traffic.', timing: 'Live' },
 ]
 
 export const fanHighlights = [

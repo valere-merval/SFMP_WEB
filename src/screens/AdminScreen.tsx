@@ -12,6 +12,30 @@ export function AdminScreen({ data }: { data: LiveData }) {
         </div>
       </Card>
 
+      <Card title="Delivery roadmap" subtitle="Version plan" wide>
+        <div className="list-stack">
+          {data.roadmap.map((item) => (
+            <Row key={item.version} leftTitle={`${item.version} · ${item.title}`} leftSubtitle={item.features.join(' • ')} rightTitle={item.features.length.toString()} rightSubtitle="Features" />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Advanced mobility analytics" subtitle="Version 3">
+        <div className="list-stack">
+          {data.heatmaps.map((item) => (
+            <Row key={item.zone} leftTitle={item.zone} leftSubtitle={`${item.intensity} · ${item.trend}`} rightTitle={item.recommendation} rightSubtitle="Heatmap" />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="Contextual alerts" subtitle="Communication">
+        <div className="list-stack">
+          {data.contextualMessages.map((item) => (
+            <Row key={item.message} leftTitle={item.audience} leftSubtitle={`${item.channel} · ${item.timing}`} rightTitle={item.message} rightSubtitle="Message" />
+          ))}
+        </div>
+      </Card>
+
       <Card title="Organizations" subtitle="Tenants and operators">
         <div className="list-stack">
           {data.organizations.map((item) => (
