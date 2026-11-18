@@ -1,4 +1,4 @@
-import type { AuditView, BookingView, ContextualMessageView, DemandPeakView, EventView, HeatmapView, IntegrationView, MetricView, MobilityOptionView, OrganizationView, RoadmapView, RouteAdaptationView, UserView } from './data/demo';
+import type { AuditView, BookingView, ConsentView, ContextualMessageView, DemandPeakView, EventView, HeatmapView, InsightView, IntegrationView, MetricView, MobilityOptionView, OrganizationView, RoadmapView, RouteAdaptationView, TrafficView, UserView } from './data/demo';
 
 export type LiveData = {
   events: EventView[];
@@ -15,4 +15,7 @@ export type LiveData = {
   demandPeaks: DemandPeakView[];
   routeAdaptations: RouteAdaptationView[];
   contextualMessages: ContextualMessageView[];
+  traffic: TrafficView[];
+  consents: ConsentView[];
+  insights: InsightView[];
 };

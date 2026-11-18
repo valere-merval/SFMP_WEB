@@ -95,6 +95,26 @@ export type ContextualMessageView = {
   timing: string
 }
 
+export type TrafficView = {
+  corridor: string
+  status: string
+  impact: string
+  recommendation: string
+}
+
+export type ConsentView = {
+  source: string
+  status: string
+  lastUpdated: string
+}
+
+export type InsightView = {
+  model: string
+  confidence: string
+  insight: string
+  action: string
+}
+
 export const fanEvents: EventView[] = [
   {
     id: 'evt_madrid_final',
@@ -264,6 +284,24 @@ export const contextualMessages: ContextualMessageView[] = [
   { audience: 'Fans near Gate 12', channel: 'Push', message: 'Use Gate 14 for faster entry.', timing: 'Now' },
   { audience: 'Late arrivals', channel: 'SMS', message: 'Your shuttle departs in 12 minutes.', timing: 'T-12m' },
   { audience: 'Drivers', channel: 'In-app', message: 'Switch to adaptive route A due to traffic.', timing: 'Live' },
+]
+
+export const traffic: TrafficView[] = [
+  { corridor: 'Airport Corridor', status: 'Heavy', impact: '+18 min', recommendation: 'Reroute via Ring Road' },
+  { corridor: 'North Ring', status: 'Moderate', impact: '+7 min', recommendation: 'Keep shuttle loop short' },
+  { corridor: 'Stadium Access', status: 'Clear', impact: '0 min', recommendation: 'Proceed as planned' },
+]
+
+export const consents: ConsentView[] = [
+  { source: 'Fan app', status: 'Granted', lastUpdated: '2027-05-29 16:50' },
+  { source: 'Driver app', status: 'Granted', lastUpdated: '2027-05-29 16:20' },
+  { source: 'Visitor web', status: 'Pending', lastUpdated: '2027-05-29 16:05' },
+]
+
+export const insights: InsightView[] = [
+  { model: 'PeakNet v2', confidence: '93%', insight: 'Demand will spike near Gate 14 at 20:55', action: 'Pre-position shuttles' },
+  { model: 'RouteBrain v1', confidence: '89%', insight: 'Airport corridor traffic will slow in 15 minutes', action: 'Switch to adaptive route A' },
+  { model: 'CrowdFlow v3', confidence: '91%', insight: 'Walking inflow will exceed average by 12%', action: 'Open extra pedestrian lane' },
 ]
 
 export const fanHighlights = [

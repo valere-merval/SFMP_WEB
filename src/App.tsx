@@ -5,9 +5,11 @@ import {
   auditEntries,
   bookings,
   contextualMessages,
+  consents,
   demandPeaks,
   fanEvents,
   heatmaps,
+  insights,
   integrations,
   mobilityOptions,
   organizations,
@@ -15,6 +17,7 @@ import {
   operationsMetrics,
   roadmap,
   routeAdaptations,
+  traffic,
   users,
 } from './data/demo';
 import type { LiveData } from './types';
@@ -41,6 +44,9 @@ const initialData: LiveData = {
   demandPeaks,
   routeAdaptations,
   contextualMessages,
+  traffic,
+  consents,
+  insights,
 };
 
 function App() {
@@ -51,7 +57,7 @@ function App() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const [events, options, book, ops, adminOrgs, adminSummary, adminUsers, audit, integrationsRemote, roadmapRemote, heatmapsRemote, peaksRemote, routesRemote, contextualRemote] = await Promise.all([
+      const [events, options, book, ops, adminOrgs, adminSummary, adminUsers, audit, integrationsRemote, roadmapRemote, heatmapsRemote, peaksRemote, routesRemote, contextualRemote, trafficRemote, consentsRemote, insightsRemote] = await Promise.all([
         getJson('/api/v1/events', fanEvents),
         getJson('/api/v1/mobility/options', mobilityOptions),
         getJson('/api/v1/bookings', bookings),
@@ -66,9 +72,12 @@ function App() {
         getJson('/api/v1/crowd/peaks', demandPeaks),
         getJson('/api/v1/mobility/routes', routeAdaptations),
         getJson('/api/v1/notifications/contextual', contextualMessages),
+        getJson('/api/v1/traffic/conditions', traffic),
+        getJson('/api/v1/gps/consents', consents),
+        getJson('/api/v1/intelligence/insights', insights),
       ]);
       if (cancelled) return;
-      setData({
+        setData({
         events,
         mobilityOptions: options,
         bookings: book,
@@ -83,6 +92,9 @@ function App() {
         demandPeaks: peaksRemote,
         routeAdaptations: routesRemote,
         contextualMessages: contextualRemote,
+        traffic: trafficRemote,
+        consents: consentsRemote,
+        insights: insightsRemote,
       });
     }
     load();

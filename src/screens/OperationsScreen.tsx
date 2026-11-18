@@ -23,10 +23,34 @@ export function OperationsScreen({ data }: { data: LiveData }) {
         </div>
       </Card>
 
+      <Card title="Traffic conditions" subtitle="Version 2">
+        <div className="list-stack">
+          {data.traffic.map((item) => (
+            <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle="Traffic" />
+          ))}
+        </div>
+      </Card>
+
       <Card title="Demand predictions" subtitle="Forecasting">
         <div className="list-stack">
           {data.operationsForecasts.map((item) => (
             <Row key={item.id} leftTitle={item.label} leftSubtitle={item.trend} rightTitle={item.value} rightSubtitle="Forecast" />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="GPS consent status" subtitle="Data privacy">
+        <div className="list-stack">
+          {data.consents.map((item) => (
+            <Row key={item.source} leftTitle={item.source} leftSubtitle={item.lastUpdated} rightTitle={item.status} rightSubtitle="Consent" />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="ML insights" subtitle="Intelligent mobility">
+        <div className="list-stack">
+          {data.insights.map((item) => (
+            <Row key={item.model} leftTitle={`${item.model} · ${item.confidence}`} leftSubtitle={item.insight} rightTitle={item.action} rightSubtitle="AI" />
           ))}
         </div>
       </Card>

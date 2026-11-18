@@ -36,6 +36,25 @@ export function AdminScreen({ data }: { data: LiveData }) {
         </div>
       </Card>
 
+      <Card title="Traffic and consent" subtitle="Version 2">
+        <div className="list-stack">
+          {data.traffic.map((item) => (
+            <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle="Traffic" />
+          ))}
+          {data.consents.map((item) => (
+            <Row key={item.source} leftTitle={item.source} leftSubtitle={item.lastUpdated} rightTitle={item.status} rightSubtitle="Consent" />
+          ))}
+        </div>
+      </Card>
+
+      <Card title="ML insights" subtitle="Intelligent mobility">
+        <div className="list-stack">
+          {data.insights.map((item) => (
+            <Row key={item.model} leftTitle={`${item.model} · ${item.confidence}`} leftSubtitle={item.insight} rightTitle={item.action} rightSubtitle="AI" />
+          ))}
+        </div>
+      </Card>
+
       <Card title="Organizations" subtitle="Tenants and operators">
         <div className="list-stack">
           {data.organizations.map((item) => (
