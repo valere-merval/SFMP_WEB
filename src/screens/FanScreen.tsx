@@ -1,7 +1,9 @@
-import { Card, MiniCard, Metric } from '../components/ui';
+import { Card, MapFrame, MiniCard, Metric } from '../components/ui';
+import { googleMapsDirectionsUrl, googleMapsEmbedUrl, googleMapsSearchUrl } from '../lib/maps';
 import type { LiveData } from '../types';
 
 export function FanScreen({ data }: { data: LiveData }) {
+  const venue = `${data.events[0].venue}, ${data.events[0].city}`;
   return (
     <section className="section-grid">
       <Card title="Transit direct lines" subtitle="Matchday routing" wide>
@@ -21,16 +23,19 @@ export function FanScreen({ data }: { data: LiveData }) {
       </Card>
 
       <Card title="Stadium perimeter gates" subtitle="Wayfinding" wide>
-        <div className="map-panel">
-          <div className="map-overlay"><strong>Gate 34 · East Hub</strong><p>Walk 3 min from the fan zone. Queue time: 8 min.</p></div>
-        </div>
+        <MapFrame
+          title="Gate 34 · East Hub"
+          subtitle="Walk 3 min from the fan zone. Queue time: 8 min."
+          src={googleMapsEmbedUrl(venue)}
+          ctaHref={googleMapsDirectionsUrl(venue, 'Madrid city center')}
+        />
       </Card>
 
       <Card title="Matchday essentials" subtitle="Quick access">
         <div className="grid-3">
-          <MiniCard title="Locker P3" subtitle="Reserved" meta="12 min" />
-          <MiniCard title="Parking P4" subtitle="Open" meta="8 min" />
-          <MiniCard title="Fan Zones" subtitle="Live" meta="6 min" />
+          <a className="map-link" href={googleMapsSearchUrl('locker P3 near ' + venue)} target="_blank" rel="noreferrer">Locker P3</a>
+          <a className="map-link" href={googleMapsSearchUrl('parking P4 near ' + venue)} target="_blank" rel="noreferrer">Parking P4</a>
+          <a className="map-link" href={googleMapsSearchUrl('fan zone near ' + venue)} target="_blank" rel="noreferrer">Fan Zones</a>
         </div>
       </Card>
     </section>

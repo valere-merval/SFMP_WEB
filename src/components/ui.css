@@ -40,6 +40,52 @@
   border: 1px solid #e6eaf0;
 }
 
+.map-shell {
+  position: relative;
+  min-height: 340px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #dbe4ff;
+  background: #e8eefb;
+}
+
+.map-frame {
+  width: 100%;
+  height: 340px;
+  border: 0;
+  display: block;
+}
+
+.map-float {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: end;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(16, 27, 45, 0.84);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+.map-float strong { display: block; font-size: 1rem; }
+.map-float p { margin: 4px 0 0; color: #cbd5e1; line-height: 1.4; }
+.map-link {
+  white-space: nowrap;
+  align-self: center;
+  background: #2457e6;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
 .mini-card { flex: 1 1 200px; padding: 14px; display: grid; gap: 4px; }
 .row { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .metric { padding: 14px; display: grid; gap: 6px; flex: 1 1 160px; }

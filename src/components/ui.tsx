@@ -52,3 +52,18 @@ export function Metric({ label, value, trend }: { label: string; value: string; 
 export function Pill({ children, subtle = false }: { children: React.ReactNode; subtle?: boolean }) {
   return <span className={subtle ? 'pill subtle' : 'pill'}>{children}</span>;
 }
+
+export function MapFrame({ title, subtitle, src, ctaHref }: { title: string; subtitle: string; src: string; ctaHref: string }) {
+  return (
+    <div className="map-shell">
+      <iframe className="map-frame" title={title} loading="lazy" referrerPolicy="no-referrer-when-downgrade" src={src} />
+      <div className="map-float">
+        <div>
+          <strong>{title}</strong>
+          <p>{subtitle}</p>
+        </div>
+        <a className="map-link" href={ctaHref} target="_blank" rel="noreferrer">Open in Google Maps</a>
+      </div>
+    </div>
+  );
+}
