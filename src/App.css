@@ -8,6 +8,27 @@
     #f6f8fc;
 }
 
+.auth-shell {
+  min-height: 100vh;
+}
+
+.auth-hero { min-height: 100%; }
+.auth-label { display: grid; gap: 8px; color: #172033; font-size: 14px; font-weight: 700; }
+.auth-input {
+  width: 100%;
+  border: 1px solid #dbe4ff;
+  border-radius: 14px;
+  background: #fff;
+  color: #172033;
+  padding: 12px 14px;
+  font: inherit;
+}
+.auth-error {
+  margin: 0;
+  color: #b91c1c;
+  font-weight: 700;
+}
+
 .topbar {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(360px, 0.9fr);

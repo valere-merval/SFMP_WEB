@@ -14,6 +14,7 @@ import {
 } from './data/demo';
 import type { LiveData } from './types';
 import { AdminScreen } from './screens/AdminScreen';
+import { AuthScreen } from './screens/AuthScreen';
 import { FanScreen } from './screens/FanScreen';
 import { OperationsScreen } from './screens/OperationsScreen';
 import { Topbar } from './screens/Topbar';
@@ -34,6 +35,7 @@ const initialData: LiveData = {
 
 function App() {
   const [view, setView] = useState<View>('fan');
+  const [signedIn, setSignedIn] = useState(() => Boolean(localStorage.getItem('sfmp_token')));
   const [data, setData] = useState(initialData);
 
   useEffect(() => {
@@ -69,13 +71,15 @@ function App() {
 
   const hero = data.events[0];
 
-  return (
+  return signedIn ? (
     <div className="app-shell">
       <Topbar hero={hero} tab={view} onTab={setView} />
       {view === 'fan' && <FanScreen data={data} />}
       {view === 'operations' && <OperationsScreen data={data} />}
       {view === 'admin' && <AdminScreen data={data} />}
     </div>
+  ) : (
+    <AuthScreen onContinue={() => setSignedIn(true)} />
   );
 }
 
