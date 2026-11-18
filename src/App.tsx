@@ -77,7 +77,7 @@ function App() {
         getJson('/api/v1/intelligence/insights', insights),
       ]);
       if (cancelled) return;
-        setData({
+      setData({
         events,
         mobilityOptions: options,
         bookings: book,

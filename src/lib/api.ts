@@ -22,6 +22,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+export async function postJson<T>(path: string, body: unknown, fallback: T): Promise<T> {
+  try {
+    const payload = await request<{ success?: boolean; data?: T }>(path, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    return payload?.data ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function login(username: string, password: string): Promise<{ accessToken: string; user: { fullName: string; role: string } }> {
   const payload = await request<{ success: boolean; data: { accessToken: string; user: { fullName: string; role: string } } }>(
     '/api/v1/auth/login',
