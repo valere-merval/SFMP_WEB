@@ -136,14 +136,16 @@ h1 {
 }
 
 .logout-pill {
-  border: 1px solid #dbe4ff;
-  background: #fff;
-  color: #2457e6;
+  margin-left: auto;
+  border: 1px solid #f1b0b7;
+  background: #fff1f2;
+  color: #b91c1c;
   border-radius: 999px;
   padding: 8px 12px;
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(185, 28, 28, 0.12);
 }
 
 .form-grid {

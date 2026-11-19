@@ -27,7 +27,13 @@ export function Topbar({
           <p className="lead">Premium mobile fan journeys, operations command and administration with a single live backend catalog.</p>
         </div>
         <div className="hero-card">
-          <div className="hero-topline"><Pill>{heroStatus}</Pill><Pill subtle>LIVE</Pill><button className="logout-pill" type="button" onClick={onLogout}>Logout</button></div>
+          <div className="hero-topline">
+            <Pill>{heroStatus}</Pill>
+            <Pill subtle>LIVE</Pill>
+            <button className="logout-pill" type="button" onClick={onLogout} aria-label="Logout">
+              Logout
+            </button>
+          </div>
           <h2>{heroName}</h2>
           <p>{heroVenue}</p>
           <div className="stats-grid">
