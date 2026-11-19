@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { Card, Row } from './components/ui';
-import { getJson } from './lib/api';
+import { getJson, clearAuthToken } from './lib/api';
 import { AdminScreen } from './screens/AdminScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { FanScreen } from './screens/FanScreen';
@@ -35,6 +35,15 @@ function App() {
   useEffect(() => {
     localStorage.setItem('sfmp_locale', locale);
   }, [locale]);
+
+  const handleSignOut = async () => {
+    await clearAuthToken();
+    setSignedIn(false);
+    setData(null);
+    setError(null);
+    setView('fan');
+    setReloadTick((value) => value + 1);
+  };
 
   useEffect(() => {
     if (!signedIn) {
@@ -127,7 +136,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <Topbar hero={hero} tab={view} onTab={setView} />
+      {data ? <Topbar hero={hero} tab={view} onTab={setView} onLogout={handleSignOut} /> : null}
       {content}
     </div>
   );

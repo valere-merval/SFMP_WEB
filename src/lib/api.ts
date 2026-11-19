@@ -7,6 +7,11 @@ export function setAuthToken(token: string) {
   localStorage.setItem('sfmp_token', token);
 }
 
+export async function clearAuthToken() {
+  authToken = '';
+  localStorage.removeItem('sfmp_token');
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const isFormData = typeof FormData !== 'undefined' && init?.body instanceof FormData;
   const response = await fetch(`${API_BASE}${path}`, {

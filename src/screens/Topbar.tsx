@@ -1,7 +1,17 @@
 import { Pill } from '../components/ui';
 import type { EventView } from '../types';
 
-export function Topbar({ hero, onTab, tab }: { hero: EventView | null; tab: 'fan' | 'operations' | 'admin'; onTab: (tab: 'fan' | 'operations' | 'admin') => void }) {
+export function Topbar({
+  hero,
+  onTab,
+  onLogout,
+  tab,
+}: {
+  hero: EventView | null;
+  tab: 'fan' | 'operations' | 'admin';
+  onTab: (tab: 'fan' | 'operations' | 'admin') => void;
+  onLogout: () => void;
+}) {
   const heroStatus = hero?.status ?? 'Loading';
   const heroName = hero?.name ?? 'Live catalog loading';
   const heroVenue = hero ? `${hero.venue}, ${hero.city}` : 'Waiting for backend data';
@@ -28,6 +38,7 @@ export function Topbar({ hero, onTab, tab }: { hero: EventView | null; tab: 'fan
           <div className="cta-row">
             <button className="primary" type="button">Plan my journey</button>
             <button className="secondary" type="button">View event details</button>
+            <button className="secondary" type="button" onClick={onLogout}>Logout</button>
           </div>
         </div>
       </header>
