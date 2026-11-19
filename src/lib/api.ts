@@ -8,10 +8,11 @@ export function setAuthToken(token: string) {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const isFormData = typeof FormData !== 'undefined' && init?.body instanceof FormData;
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...(init?.headers ?? {}),
     },
@@ -32,6 +33,21 @@ export async function postJson<T>(path: string, body: unknown): Promise<T> {
 
   if (payload.data === undefined || payload.data === null) {
     throw new Error(`Empty response from ${path}`);
+  }
+
+  return payload.data;
+}
+
+export async function uploadImage(file: File): Promise<{ key: string; url: string }> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const payload = await request<{ success?: boolean; data?: { key: string; url: string } }>('/api/v1/uploads/images', {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (payload.data === undefined || payload.data === null) {
+    throw new Error('Empty upload response');
   }
 
   return payload.data;

@@ -8,6 +8,17 @@ export type EventView = {
   expectedAttendance: number;
 };
 
+export type EventCatalogView = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  sport: string;
+  country: string;
+  badge: string;
+  eventCount: number;
+};
+
 export type MobilityOptionView = {
   id: string;
   mode: string;
@@ -117,6 +128,7 @@ export type InsightView = {
 
 export type CatalogData = {
   events: EventView[];
+  eventCatalogs: EventCatalogView[];
   mobilityOptions: MobilityOptionView[];
   bookings: BookingView[];
   operationsMetrics: MetricView[];
