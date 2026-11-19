@@ -135,16 +135,15 @@ h1 {
   gap: 16px;
 }
 
-.hero-topline,
-.cta-row,
-.chips-row,
-.grid-2,
-.grid-3,
-.list-stack,
-.metric-grid {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
+.logout-pill {
+  border: 1px solid #dbe4ff;
+  background: #fff;
+  color: #2457e6;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .form-grid {

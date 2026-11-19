@@ -27,7 +27,7 @@ export function Topbar({
           <p className="lead">Premium mobile fan journeys, operations command and administration with a single live backend catalog.</p>
         </div>
         <div className="hero-card">
-          <div className="hero-topline"><Pill>{heroStatus}</Pill><Pill subtle>LIVE</Pill></div>
+          <div className="hero-topline"><Pill>{heroStatus}</Pill><Pill subtle>LIVE</Pill><button className="logout-pill" type="button" onClick={onLogout}>Logout</button></div>
           <h2>{heroName}</h2>
           <p>{heroVenue}</p>
           <div className="stats-grid">
@@ -38,7 +38,6 @@ export function Topbar({
           <div className="cta-row">
             <button className="primary" type="button">Plan my journey</button>
             <button className="secondary" type="button">View event details</button>
-            <button className="secondary" type="button" onClick={onLogout}>Logout</button>
           </div>
         </div>
       </header>
