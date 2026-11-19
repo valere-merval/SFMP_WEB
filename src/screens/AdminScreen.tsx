@@ -148,7 +148,15 @@ function SearchableField({
   const id = useMemo(() => `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-options`, [label]);
   const filteredOptions = useMemo(() => {
     const term = query.trim().toLowerCase();
-    return options.filter((option) => !term || option.label.toLowerCase().includes(term) || option.value.toLowerCase().includes(term));
+    return options
+      .filter((option) => !term || option.label.toLowerCase().includes(term) || option.value.toLowerCase().includes(term))
+      .sort((left, right) => {
+        const leftLabel = left.label.toLowerCase();
+        const rightLabel = right.label.toLowerCase();
+        const leftScore = term && leftLabel.startsWith(term) ? 0 : 1;
+        const rightScore = term && rightLabel.startsWith(term) ? 0 : 1;
+        return leftScore - rightScore || leftLabel.localeCompare(rightLabel);
+      });
   }, [options, query]);
 
   const choose = (option: { label: string; value: string }) => {
@@ -175,12 +183,14 @@ function SearchableField({
           role="combobox"
           aria-expanded={open}
           aria-controls={id}
-          autoComplete="off"
+          autoComplete="new-password"
+          autoCorrect="off"
+          spellCheck={false}
         />
         {open ? (
           <div className="searchable-dropdown-menu" id={id} role="listbox">
             {filteredOptions.length ? (
-              filteredOptions.slice(0, 60).map((option) => (
+              filteredOptions.map((option) => (
                 <button key={option.value} type="button" className="searchable-dropdown-item" onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)}>
                   <span>{option.label}</span>
                   {option.label !== option.value ? <small>{option.value}</small> : null}
@@ -281,7 +291,7 @@ function CountryCityField({
   const selectedCountry = countryOptions.find((entry) => entry.label.toLowerCase() === country.toLowerCase() || entry.value.toLowerCase() === country.toLowerCase());
   const cityOptions = useMemo(() => {
     if (!selectedCountry) return [];
-    return (City.getCitiesOfCountry(selectedCountry.value) ?? []).slice(0, 400).map((entry) => ({ label: entry.name, value: entry.name }));
+    return (City.getCitiesOfCountry(selectedCountry.value) ?? []).map((entry) => ({ label: entry.name, value: entry.name }));
   }, [selectedCountry]);
 
   return (
