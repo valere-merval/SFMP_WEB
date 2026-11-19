@@ -96,7 +96,7 @@ function App() {
                 rightSubtitle="Live"
               />
               <Row
-                leftTitle="No local fixtures"
+                leftTitle="Waiting for backend data"
                 leftSubtitle="The UI is intentionally empty until the backend responds."
                 rightTitle="Ready to render"
                 rightSubtitle="Polished"
