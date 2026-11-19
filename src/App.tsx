@@ -13,16 +13,18 @@ type View = 'fan' | 'operations' | 'admin';
 type LoadState = 'loading' | 'ready' | 'error';
 type Locale = 'en' | 'es' | 'fr' | 'de' | 'pt' | 'ar' | 'zh' | 'ru';
 
+const SUPPORTED_LOCALES: Locale[] = ['en', 'es', 'fr', 'de', 'pt', 'ar', 'zh', 'ru'];
+
 function detectLocale(): Locale {
   const raw = (navigator.language || 'en').toLowerCase().split('-')[0];
-  return ['en', 'es', 'fr', 'de', 'pt', 'ar', 'zh', 'ru'].includes(raw) ? (raw as Locale) : 'en';
+  return SUPPORTED_LOCALES.includes(raw as Locale) ? (raw as Locale) : 'en';
 }
 
 function App() {
   const [view, setView] = useState<View>('fan');
   const [locale, setLocale] = useState<Locale>(() => {
     const saved = localStorage.getItem('sfmp_locale') as Locale | null;
-    return saved && ['en', 'es', 'fr', 'de', 'pt', 'ar', 'zh', 'ru'].includes(saved) ? saved : detectLocale();
+    return saved && SUPPORTED_LOCALES.includes(saved) ? saved : detectLocale();
   });
   const [signedIn, setSignedIn] = useState(() => Boolean(localStorage.getItem('sfmp_token')));
   const [data, setData] = useState<CatalogData | null>(null);
@@ -71,7 +73,7 @@ function App() {
     return <AuthScreen locale={locale} onLocaleChange={setLocale} onContinue={() => setSignedIn(true)} />;
   }
 
-  const hero = data?.events[0] ?? null;
+  const hero = data?.events?.[0] ?? null;
   const content = (() => {
     if (loadState === 'loading') {
       return (
