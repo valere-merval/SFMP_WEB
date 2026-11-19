@@ -22,7 +22,7 @@ export function OperationsScreen({ catalog }: { catalog: CatalogData }) {
       setBriefing(result);
     } catch (error) {
       setBriefing(null);
-      setBriefingError(error instanceof Error ? error.message : 'AI briefing is unavailable from the backend.');
+      setBriefingError(error instanceof Error ? error.message : 'Operational briefing is unavailable from the backend.');
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export function OperationsScreen({ catalog }: { catalog: CatalogData }) {
         </div>
       </Card>
 
-      <Card title="AI briefing" subtitle="Backend analysis">
+      <Card title="Operational briefing" subtitle="Backend analysis">
         <div className="list-stack">
           {briefing ? (
             <>
@@ -67,11 +67,11 @@ export function OperationsScreen({ catalog }: { catalog: CatalogData }) {
           ) : briefingError ? (
             <Row leftTitle="Briefing unavailable" leftSubtitle={briefingError} rightTitle="Check backend" rightSubtitle="AI" />
           ) : (
-            <Row leftTitle="Generate an AI briefing" leftSubtitle="This request goes directly to the backend analysis endpoint." rightTitle={loading ? 'Running...' : 'Ready'} rightSubtitle="AI" />
+            <Row leftTitle="Generate a live briefing" leftSubtitle="This request goes directly to the backend analysis endpoint." rightTitle={loading ? 'Running...' : 'Ready'} rightSubtitle="Live" />
           )}
         </div>
         <div className="cta-row">
-          <button className="primary-button" type="button" onClick={generateBriefing} disabled={loading}>{loading ? 'Analyzing...' : 'Generate AI briefing'}</button>
+          <button className="primary-button" type="button" onClick={generateBriefing} disabled={loading}>{loading ? 'Analyzing...' : 'Generate briefing'}</button>
         </div>
       </Card>
 

@@ -11,14 +11,28 @@ import type { CatalogData } from './types';
 
 type View = 'fan' | 'operations' | 'admin';
 type LoadState = 'loading' | 'ready' | 'error';
+type Locale = 'en' | 'es' | 'fr' | 'de' | 'pt' | 'ar' | 'zh' | 'ru';
+
+function detectLocale(): Locale {
+  const raw = (navigator.language || 'en').toLowerCase().split('-')[0];
+  return ['en', 'es', 'fr', 'de', 'pt', 'ar', 'zh', 'ru'].includes(raw) ? (raw as Locale) : 'en';
+}
 
 function App() {
   const [view, setView] = useState<View>('fan');
+  const [locale, setLocale] = useState<Locale>(() => {
+    const saved = localStorage.getItem('sfmp_locale') as Locale | null;
+    return saved && ['en', 'es', 'fr', 'de', 'pt', 'ar', 'zh', 'ru'].includes(saved) ? saved : detectLocale();
+  });
   const [signedIn, setSignedIn] = useState(() => Boolean(localStorage.getItem('sfmp_token')));
   const [data, setData] = useState<CatalogData | null>(null);
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [error, setError] = useState<string | null>(null);
   const [reloadTick, setReloadTick] = useState(0);
+
+  useEffect(() => {
+    localStorage.setItem('sfmp_locale', locale);
+  }, [locale]);
 
   useEffect(() => {
     if (!signedIn) {
@@ -35,9 +49,6 @@ function App() {
 
       try {
         const catalog = await getJson<CatalogData>('/api/v1/catalog');
-        if (!catalog.events?.length) {
-          throw new Error('Catalog response missing events');
-        }
         if (cancelled) return;
         setData(catalog);
         setLoadState('ready');
@@ -57,7 +68,7 @@ function App() {
   }, [reloadTick, signedIn]);
 
   if (!signedIn) {
-    return <AuthScreen onContinue={() => setSignedIn(true)} />;
+    return <AuthScreen locale={locale} onLocaleChange={setLocale} onContinue={() => setSignedIn(true)} />;
   }
 
   const hero = data?.events[0] ?? null;

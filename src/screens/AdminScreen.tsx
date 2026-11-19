@@ -20,7 +20,7 @@ export function AdminScreen({ catalog }: { catalog: CatalogData }) {
         </div>
       </Card>
 
-      <Card title="Advanced mobility analytics" subtitle="Version 3">
+      <Card title="Mobility analytics" subtitle="Command view">
         <div className="list-stack">
           {catalog.heatmaps.map((item) => (
             <Row key={item.zone} leftTitle={item.zone} leftSubtitle={`${item.intensity} · ${item.trend}`} rightTitle={item.recommendation} rightSubtitle="Heatmap" />
@@ -36,7 +36,7 @@ export function AdminScreen({ catalog }: { catalog: CatalogData }) {
         </div>
       </Card>
 
-      <Card title="Traffic and consent" subtitle="Version 2">
+      <Card title="Traffic and consent" subtitle="Live operations">
         <div className="list-stack">
           {catalog.traffic.map((item) => (
             <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle="Traffic" />
