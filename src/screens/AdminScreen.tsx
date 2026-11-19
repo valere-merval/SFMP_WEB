@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { City, Country } from 'country-state-city';
 import { Card, Metric, Row } from '../components/ui';
 import { postJson, uploadImage } from '../lib/api';
@@ -244,14 +244,6 @@ function CountryCityField({
     if (!selectedCountry) return [];
     return (City.getCitiesOfCountry(selectedCountry.value) ?? []).slice(0, 400).map((entry) => ({ label: entry.name, value: entry.name }));
   }, [selectedCountry]);
-
-  useEffect(() => {
-    if (!city) return;
-    const stillValid = cityOptions.some((option) => option.label.toLowerCase() === city.toLowerCase());
-    if (!stillValid) {
-      onCityChange('');
-    }
-  }, [city, cityOptions, onCityChange]);
 
   return (
     <>
