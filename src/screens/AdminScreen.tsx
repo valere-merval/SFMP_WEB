@@ -143,16 +143,55 @@ function SearchableField({
   helper?: string;
   wide?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value);
   const id = useMemo(() => `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-options`, [label]);
+  const filteredOptions = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return options.filter((option) => !term || option.label.toLowerCase().includes(term) || option.value.toLowerCase().includes(term));
+  }, [options, query]);
+
+  const choose = (option: { label: string; value: string }) => {
+    onChange(option.label);
+    setQuery(option.label);
+    setOpen(false);
+  };
+
   return (
     <label className={`auth-label${wide ? ' wide-field' : ''}`}>
       {label}
-      <input className="auth-input" list={id} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
-      <datalist id={id}>
-        {options.map((option) => (
-          <option key={option.value} value={option.label} />
-        ))}
-      </datalist>
+      <div className="searchable-dropdown">
+        <input
+          className="auth-input"
+          value={open ? query : value}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+            onChange(event.target.value);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 160)}
+          placeholder={placeholder}
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={id}
+          autoComplete="off"
+        />
+        {open ? (
+          <div className="searchable-dropdown-menu" id={id} role="listbox">
+            {filteredOptions.length ? (
+              filteredOptions.slice(0, 60).map((option) => (
+                <button key={option.value} type="button" className="searchable-dropdown-item" onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)}>
+                  <span>{option.label}</span>
+                  {option.label !== option.value ? <small>{option.value}</small> : null}
+                </button>
+              ))
+            ) : (
+              <div className="searchable-dropdown-empty">No result</div>
+            )}
+          </div>
+        ) : null}
+      </div>
       {helper ? <small className="auth-help">{helper}</small> : null}
     </label>
   );
