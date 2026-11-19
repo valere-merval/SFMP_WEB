@@ -122,7 +122,7 @@ function App() {
 
     if (view === 'fan') return <FanScreen catalog={data} />;
     if (view === 'operations') return <OperationsScreen catalog={data} />;
-    return <AdminScreen catalog={data} />;
+    return <AdminScreen catalog={data} onRefresh={() => setReloadTick((value) => value + 1)} />;
   })();
 
   return (
