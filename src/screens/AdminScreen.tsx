@@ -1,16 +1,31 @@
-import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { City, Country } from 'country-state-city';
 import { Card, Metric, Row } from '../components/ui';
 import { postJson, uploadImage } from '../lib/api';
 import type { CatalogData, EventCatalogView } from '../types';
+
+const sportOptions = ['Football', 'Basketball', 'Rugby', 'Tennis', 'Athletics', 'Cycling', 'Handball', 'Volleyball', 'Cricket', 'Hockey', 'Motorsport'];
+const continentOptions = ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania', 'Antarctica'];
+const transitOptions = ['Metro', 'Train', 'Tram', 'Bus', 'Shuttle', 'Taxi', 'Ride-hailing', 'Walking'];
+const stageOptions = [
+  ...Array.from({ length: 60 }, (_, index) => `Journée ${index + 1}`),
+  'Phase de poule',
+  '16e de finale',
+  '8e de finale',
+  'Quart de finale',
+  'Demi-finale',
+  'Finale',
+  'Match amical',
+];
+
+const countryOptions = Country.getAllCountries().map((country) => ({ label: country.name, value: country.isoCode, flag: country.flag }));
 
 const emptyCatalogForm = {
   title: '',
   description: '',
   imageUrl: '',
-  sport: '',
   country: '',
   badge: '',
-  eventCount: 0,
 };
 
 const emptyMatchForm = {
@@ -25,14 +40,12 @@ const emptyMatchForm = {
   stage: '',
   date: '',
   time: '',
-  status: '',
   gate: '',
   sector: '',
-  countdown: '',
-  weather: '',
-  temperature: '',
-  transitSummary: '',
+  transitSummary: [] as string[],
+  ticketAvailable: false,
   ticketPrice: '',
+  ticketsTotal: '',
   imageUrl: '',
 };
 
@@ -113,6 +126,155 @@ function CatalogSelect({ catalogs, value, onChange }: { catalogs: EventCatalogVi
   );
 }
 
+function SearchableField({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  helper,
+  wide = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { label: string; value: string }[];
+  placeholder: string;
+  helper?: string;
+  wide?: boolean;
+}) {
+  const id = useMemo(() => `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-options`, [label]);
+  return (
+    <label className={`auth-label${wide ? ' wide-field' : ''}`}>
+      {label}
+      <input className="auth-input" list={id} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
+      <datalist id={id}>
+        {options.map((option) => (
+          <option key={option.value} value={option.label} />
+        ))}
+      </datalist>
+      {helper ? <small className="auth-help">{helper}</small> : null}
+    </label>
+  );
+}
+
+function MultiSelectField({
+  label,
+  selected,
+  options,
+  onChange,
+  placeholder,
+  helper,
+  wide = false,
+}: {
+  label: string;
+  selected: string[];
+  options: string[];
+  onChange: (selected: string[]) => void;
+  placeholder: string;
+  helper?: string;
+  wide?: boolean;
+}) {
+  const [query, setQuery] = useState('');
+  const id = useMemo(() => `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-options`, [label]);
+  const filteredOptions = options.filter((option) => option.toLowerCase().includes(query.toLowerCase()));
+
+  const addOption = (value: string) => {
+    const next = value.trim();
+    if (!next) return;
+    const normalized = options.find((option) => option.toLowerCase() === next.toLowerCase()) ?? next;
+    if (selected.some((entry) => entry.toLowerCase() === normalized.toLowerCase())) return;
+    onChange([...selected, normalized]);
+    setQuery('');
+  };
+
+  return (
+    <label className={`auth-label${wide ? ' wide-field' : ''}`}>
+      {label}
+      <div className="multi-select-shell">
+        <div className="multi-select-row">
+          <input
+            className="auth-input"
+            list={id}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={placeholder}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                addOption(query);
+              }
+            }}
+          />
+          <button className="secondary-button tiny" type="button" onClick={() => addOption(query)}>
+            Add
+          </button>
+        </div>
+        <datalist id={id}>
+          {filteredOptions.map((option) => (
+            <option key={option} value={option} />
+          ))}
+        </datalist>
+        <div className="multi-select-chips">
+          {selected.map((entry) => (
+            <button key={entry} className="chip-button" type="button" onClick={() => onChange(selected.filter((value) => value !== entry))}>
+              {entry} ×
+            </button>
+          ))}
+        </div>
+      </div>
+      {helper ? <small className="auth-help">{helper}</small> : null}
+    </label>
+  );
+}
+
+function CountryCityField({
+  country,
+  city,
+  onCountryChange,
+  onCityChange,
+}: {
+  country: string;
+  city: string;
+  onCountryChange: (value: string) => void;
+  onCityChange: (value: string) => void;
+}) {
+  const selectedCountry = countryOptions.find((entry) => entry.label.toLowerCase() === country.toLowerCase() || entry.value.toLowerCase() === country.toLowerCase());
+  const cityOptions = useMemo(() => {
+    if (!selectedCountry) return [];
+    return (City.getCitiesOfCountry(selectedCountry.value) ?? []).slice(0, 400).map((entry) => ({ label: entry.name, value: entry.name }));
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    if (!city) return;
+    const stillValid = cityOptions.some((option) => option.label.toLowerCase() === city.toLowerCase());
+    if (!stillValid) {
+      onCityChange('');
+    }
+  }, [city, cityOptions, onCityChange]);
+
+  return (
+    <>
+      <SearchableField
+        label="Country"
+        value={country}
+        onChange={onCountryChange}
+        options={countryOptions}
+        placeholder="Search a country"
+        helper="Type to filter and choose a country from the full list."
+      />
+      <SearchableField
+        label="City"
+        value={city}
+        onChange={onCityChange}
+        options={cityOptions}
+        placeholder={selectedCountry ? `Search a city in ${selectedCountry.label}` : 'Select a country first'}
+        helper={selectedCountry ? `Cities are filtered for ${selectedCountry.label}.` : 'Pick a country first to unlock city options.'}
+      />
+    </>
+  );
+}
+
 export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRefresh: () => void }) {
   const operationsForecasts = catalog.operationsForecasts ?? [];
   const roadmap = catalog.roadmap ?? [];
@@ -127,6 +289,7 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
   const eventCatalogs = catalog.eventCatalogs ?? [];
 
   const [catalogForm, setCatalogForm] = useState(emptyCatalogForm);
+  const [selectedSports, setSelectedSports] = useState<string[]>(['Football']);
   const [matchForm, setMatchForm] = useState(emptyMatchForm);
   const [savingCatalog, setSavingCatalog] = useState(false);
   const [savingMatch, setSavingMatch] = useState(false);
@@ -144,9 +307,10 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
     try {
       const created = await postJson<{ id: string }>('/api/v1/event-catalogs', {
         ...catalogForm,
-        eventCount: Number(catalogForm.eventCount) || 0,
+        sports: selectedSports,
       });
       setCatalogForm(emptyCatalogForm);
+      setSelectedSports(['Football']);
       setMessage(`Event catalog created: ${created.id}`);
       onRefresh();
     } catch (error) {
@@ -170,10 +334,18 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
       setSavingMatch(false);
       return;
     }
+    if (matchForm.ticketAvailable && (!matchForm.ticketPrice || !matchForm.ticketsTotal)) {
+      setMessage('Please provide ticket price and quantity when tickets are available.');
+      setSavingMatch(false);
+      return;
+    }
     try {
       await postJson('/api/v1/matches', {
         id: buildMatchId(matchForm.homeTeam, matchForm.awayTeam, matchForm.date),
         ...matchForm,
+        transitSummary: matchForm.transitSummary.join(', '),
+        ticketPrice: matchForm.ticketAvailable ? matchForm.ticketPrice : null,
+        ticketsTotal: matchForm.ticketAvailable ? Number(matchForm.ticketsTotal) : null,
         catalogId: matchForm.catalogId || eventCatalogs[0]?.id || '',
       });
       setMatchForm((current) => ({ ...emptyMatchForm, catalogId: current.catalogId }));
@@ -214,21 +386,30 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
               onUrlChange={(url) => setCatalogForm({ ...catalogForm, imageUrl: url })}
               helper="Upload the event artwork to MinIO; the saved URL is stored in the database."
             />
-            <label className="auth-label">
-              Sport
-              <input className="auth-input" value={catalogForm.sport} onChange={(e) => setCatalogForm({ ...catalogForm, sport: e.target.value })} placeholder="Football" required />
-            </label>
-            <label className="auth-label">
-              Country
-              <input className="auth-input" value={catalogForm.country} onChange={(e) => setCatalogForm({ ...catalogForm, country: e.target.value })} placeholder="Spain" required />
-            </label>
+            <MultiSelectField
+              label="Sport"
+              selected={selectedSports}
+              options={sportOptions}
+              onChange={setSelectedSports}
+              placeholder="Search and add one or more sports"
+              helper="Choose several sports for the same catalog."
+              wide
+            />
+            <SearchableField
+              label="Country"
+              value={catalogForm.country}
+              onChange={(value) => setCatalogForm({ ...catalogForm, country: value })}
+              options={countryOptions}
+              placeholder="Search a country"
+              helper="Use the full searchable country list."
+            />
             <label className="auth-label">
               Badge
-              <input className="auth-input" value={catalogForm.badge} onChange={(e) => setCatalogForm({ ...catalogForm, badge: e.target.value })} placeholder="EUROPE" required />
-            </label>
-            <label className="auth-label">
-              Event count
-              <input className="auth-input" type="number" min="0" value={catalogForm.eventCount} onChange={(e) => setCatalogForm({ ...catalogForm, eventCount: Number(e.target.value) })} required />
+              <select className="auth-input auth-select" value={catalogForm.badge} onChange={(e) => setCatalogForm({ ...catalogForm, badge: e.target.value })} required>
+                <option value="">Select a continent</option>
+                {continentOptions.map((continent) => <option key={continent} value={continent}>{continent}</option>)}
+              </select>
+              <small className="auth-help">Use the continent badge for the catalog.</small>
             </label>
           </div>
           <div className="cta-row">
@@ -265,33 +446,30 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
               onUrlChange={(url) => setMatchForm({ ...matchForm, awayFlag: url })}
               helper="Upload the away flag image to MinIO."
             />
-            <label className="auth-label">
-              City
-              <input className="auth-input" value={matchForm.city} onChange={(e) => setMatchForm({ ...matchForm, city: e.target.value })} placeholder="Madrid" required />
-            </label>
-            <label className="auth-label">
-              Country
-              <input className="auth-input" value={matchForm.country} onChange={(e) => setMatchForm({ ...matchForm, country: e.target.value })} placeholder="Spain" required />
-            </label>
+            <CountryCityField
+              country={matchForm.country}
+              city={matchForm.city}
+              onCountryChange={(value) => setMatchForm({ ...matchForm, country: value, city: '' })}
+              onCityChange={(value) => setMatchForm({ ...matchForm, city: value })}
+            />
             <label className="auth-label wide-field">
               Venue
               <input className="auth-input" value={matchForm.venue} onChange={(e) => setMatchForm({ ...matchForm, venue: e.target.value })} placeholder="Estadio Metropolitano" required />
             </label>
             <label className="auth-label">
               Stage
-              <input className="auth-input" value={matchForm.stage} onChange={(e) => setMatchForm({ ...matchForm, stage: e.target.value })} placeholder="Final" required />
+              <select className="auth-input auth-select" value={matchForm.stage} onChange={(e) => setMatchForm({ ...matchForm, stage: e.target.value })} required>
+                <option value="">Select a stage</option>
+                {stageOptions.map((stage) => <option key={stage} value={stage}>{stage}</option>)}
+              </select>
             </label>
             <label className="auth-label">
               Date
-              <input className="auth-input" value={matchForm.date} onChange={(e) => setMatchForm({ ...matchForm, date: e.target.value })} placeholder="2025-06-01" required />
+              <input className="auth-input" type="date" value={matchForm.date} onChange={(e) => setMatchForm({ ...matchForm, date: e.target.value })} required />
             </label>
             <label className="auth-label">
               Time
-              <input className="auth-input" value={matchForm.time} onChange={(e) => setMatchForm({ ...matchForm, time: e.target.value })} placeholder="21:00" required />
-            </label>
-            <label className="auth-label">
-              Status
-              <input className="auth-input" value={matchForm.status} onChange={(e) => setMatchForm({ ...matchForm, status: e.target.value })} placeholder="Live" required />
+              <input className="auth-input" type="time" value={matchForm.time} onChange={(e) => setMatchForm({ ...matchForm, time: e.target.value })} required />
             </label>
             <label className="auth-label">
               Gate
@@ -301,25 +479,34 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
               Sector
               <input className="auth-input" value={matchForm.sector} onChange={(e) => setMatchForm({ ...matchForm, sector: e.target.value })} placeholder="Sector 212" required />
             </label>
-            <label className="auth-label">
-              Countdown
-              <input className="auth-input" value={matchForm.countdown} onChange={(e) => setMatchForm({ ...matchForm, countdown: e.target.value })} placeholder="02:42:30" required />
-            </label>
-            <label className="auth-label">
-              Weather
-              <input className="auth-input" value={matchForm.weather} onChange={(e) => setMatchForm({ ...matchForm, weather: e.target.value })} placeholder="Clear" required />
-            </label>
-            <label className="auth-label">
-              Temperature
-              <input className="auth-input" value={matchForm.temperature} onChange={(e) => setMatchForm({ ...matchForm, temperature: e.target.value })} placeholder="22°C" required />
-            </label>
-            <label className="auth-label wide-field">
-              Transit summary
-              <input className="auth-input" value={matchForm.transitSummary} onChange={(e) => setMatchForm({ ...matchForm, transitSummary: e.target.value })} placeholder="Metro, shuttle, taxi and walk guidance" required />
-            </label>
-            <label className="auth-label">
-              Ticket price
-              <input className="auth-input" value={matchForm.ticketPrice} onChange={(e) => setMatchForm({ ...matchForm, ticketPrice: e.target.value })} placeholder="€95" required />
+            <MultiSelectField
+              label="Transit summary"
+              selected={matchForm.transitSummary}
+              options={transitOptions}
+              onChange={(selected) => setMatchForm({ ...matchForm, transitSummary: selected })}
+              placeholder="Search and add transit modes"
+              helper="Choose several transport modes that will be shown in the app."
+              wide
+            />
+            <label className="auth-label wide-field ticket-block">
+              <div className="ticket-toggle">
+                <span>Tickets available on platform</span>
+                <input type="checkbox" checked={matchForm.ticketAvailable} onChange={(e) => setMatchForm({ ...matchForm, ticketAvailable: e.target.checked })} />
+              </div>
+              {matchForm.ticketAvailable ? (
+                <div className="ticket-fields">
+                  <label className="auth-label">
+                    Ticket price
+                    <input className="auth-input" value={matchForm.ticketPrice} onChange={(e) => setMatchForm({ ...matchForm, ticketPrice: e.target.value })} placeholder="€95" />
+                  </label>
+                  <label className="auth-label">
+                    Tickets available
+                    <input className="auth-input" type="number" min="1" value={matchForm.ticketsTotal} onChange={(e) => setMatchForm({ ...matchForm, ticketsTotal: e.target.value })} placeholder="120" />
+                  </label>
+                </div>
+              ) : (
+                <small className="auth-help">Enable ticket sales to add price and inventory.</small>
+              )}
             </label>
             <ImageUploadField
               label="Match image"
