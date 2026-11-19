@@ -16,22 +16,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
   });
+
   if (!response.ok) {
     throw new Error(`Request failed: ${response.status}`);
   }
+
   return (await response.json()) as T;
 }
 
-export async function postJson<T>(path: string, body: unknown, fallback: T): Promise<T> {
-  try {
-    const payload = await request<{ success?: boolean; data?: T }>(path, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-    return payload?.data ?? fallback;
-  } catch {
-    return fallback;
+export async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const payload = await request<{ success?: boolean; data?: T }>(path, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+  if (payload.data === undefined || payload.data === null) {
+    throw new Error(`Empty response from ${path}`);
   }
+
+  return payload.data;
 }
 
 export async function login(username: string, password: string): Promise<{ accessToken: string; user: { fullName: string; role: string } }> {
@@ -42,19 +45,21 @@ export async function login(username: string, password: string): Promise<{ acces
       body: JSON.stringify({ username, password }),
     },
   );
+
+  if (!payload.data) {
+    throw new Error('Login response missing data');
+  }
+
   setAuthToken(payload.data.accessToken);
   return payload.data;
 }
 
-export async function getJson<T>(path: string, fallback: T): Promise<T> {
-  try {
-    const response = await fetch(`${API_BASE}${path}`, {
-      headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-    });
-    if (!response.ok) return fallback;
-    const payload = (await response.json()) as { success?: boolean; data?: T };
-    return payload?.data ?? fallback;
-  } catch {
-    return fallback;
+export async function getJson<T>(path: string): Promise<T> {
+  const payload = await request<{ success?: boolean; data?: T }>(path);
+
+  if (payload.data === undefined || payload.data === null) {
+    throw new Error(`Empty response from ${path}`);
   }
+
+  return payload.data;
 }

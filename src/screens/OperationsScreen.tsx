@@ -2,24 +2,32 @@ import { useState } from 'react';
 import { Card, MapFrame, Metric, Row } from '../components/ui';
 import { postJson } from '../lib/api';
 import { googleMapsDirectionsUrl, googleMapsEmbedUrl } from '../lib/maps';
-import type { LiveData } from '../types';
+import type { CatalogData } from '../types';
 
-export function OperationsScreen({ data }: { data: LiveData }) {
+export function OperationsScreen({ catalog }: { catalog: CatalogData }) {
   const network = 'Madrid, Spain';
   const [briefing, setBriefing] = useState<{ model: string; summary: string; confidence: string; recommendations: string[] } | null>(null);
+  const [briefingError, setBriefingError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const generateBriefing = async () => {
     setLoading(true);
-    const result = await postJson('/api/v1/intelligence/analyze', { focus: 'matchday demand and routing', context: 'Madrid stadium operations, traffic, gates, and post-match departures' }, {
-      model: 'local-fallback',
-      summary: 'AI briefing will appear here once the backend AI key is configured.',
-      confidence: '88%',
-      recommendations: ['Pre-position shuttles', 'Prioritize crowded corridors', 'Push targeted notifications'],
-    });
-    setBriefing(result);
-    setLoading(false);
+    setBriefingError(null);
+
+    try {
+      const result = await postJson<{ model: string; summary: string; confidence: string; recommendations: string[] }>('/api/v1/intelligence/analyze', {
+        focus: 'matchday demand and routing',
+        context: 'Madrid stadium operations, traffic, gates, and post-match departures',
+      });
+      setBriefing(result);
+    } catch (error) {
+      setBriefing(null);
+      setBriefingError(error instanceof Error ? error.message : 'AI briefing is unavailable from the backend.');
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <section className="section-grid operations-grid">
       <Card title="Live mobility map" subtitle="Operations center" wide>
@@ -33,21 +41,21 @@ export function OperationsScreen({ data }: { data: LiveData }) {
 
       <Card title="Key metrics" subtitle="Command view">
         <div className="metric-grid">
-          {data.operationsMetrics.map((item) => (
+          {catalog.operationsMetrics.map((item) => (
             <Metric key={item.id} label={item.label} value={item.value} trend={item.trend} />
           ))}
         </div>
       </Card>
 
-      <Card title="Traffic conditions" subtitle="Version 2">
+      <Card title="Traffic conditions" subtitle="Live feed">
         <div className="list-stack">
-          {data.traffic.map((item) => (
+          {catalog.traffic.map((item) => (
             <Row key={item.corridor} leftTitle={item.corridor} leftSubtitle={`${item.status} · ${item.impact}`} rightTitle={item.recommendation} rightSubtitle="Traffic" />
           ))}
         </div>
       </Card>
 
-      <Card title="AI briefing" subtitle="OpenAI / fallback">
+      <Card title="AI briefing" subtitle="Backend analysis">
         <div className="list-stack">
           {briefing ? (
             <>
@@ -56,8 +64,10 @@ export function OperationsScreen({ data }: { data: LiveData }) {
                 <Row key={item} leftTitle={item} leftSubtitle="Recommendation" rightTitle="Action" rightSubtitle="AI" />
               ))}
             </>
+          ) : briefingError ? (
+            <Row leftTitle="Briefing unavailable" leftSubtitle={briefingError} rightTitle="Check backend" rightSubtitle="AI" />
           ) : (
-            <Row leftTitle="Generate an AI briefing" leftSubtitle="Use OpenAI gpt-5.3-mini when OPENAI_API_KEY is configured. Falls back locally otherwise." rightTitle={loading ? 'Running...' : 'Ready'} rightSubtitle="AI" />
+            <Row leftTitle="Generate an AI briefing" leftSubtitle="This request goes directly to the backend analysis endpoint." rightTitle={loading ? 'Running...' : 'Ready'} rightSubtitle="AI" />
           )}
         </div>
         <div className="cta-row">
@@ -67,7 +77,7 @@ export function OperationsScreen({ data }: { data: LiveData }) {
 
       <Card title="Demand predictions" subtitle="Forecasting">
         <div className="list-stack">
-          {data.operationsForecasts.map((item) => (
+          {catalog.operationsForecasts.map((item) => (
             <Row key={item.id} leftTitle={item.label} leftSubtitle={item.trend} rightTitle={item.value} rightSubtitle="Forecast" />
           ))}
         </div>
@@ -75,7 +85,7 @@ export function OperationsScreen({ data }: { data: LiveData }) {
 
       <Card title="GPS consent status" subtitle="Data privacy">
         <div className="list-stack">
-          {data.consents.map((item) => (
+          {catalog.consents.map((item) => (
             <Row key={item.source} leftTitle={item.source} leftSubtitle={item.lastUpdated} rightTitle={item.status} rightSubtitle="Consent" />
           ))}
         </div>
@@ -83,7 +93,7 @@ export function OperationsScreen({ data }: { data: LiveData }) {
 
       <Card title="ML insights" subtitle="Intelligent mobility">
         <div className="list-stack">
-          {data.insights.map((item) => (
+          {catalog.insights.map((item) => (
             <Row key={item.model} leftTitle={`${item.model} · ${item.confidence}`} leftSubtitle={item.insight} rightTitle={item.action} rightSubtitle="AI" />
           ))}
         </div>
@@ -91,7 +101,7 @@ export function OperationsScreen({ data }: { data: LiveData }) {
 
       <Card title="Active providers" subtitle="Transport partners">
         <div className="list-stack">
-          {data.integrations.map((item) => (
+          {catalog.integrations.map((item) => (
             <Row key={item.id} leftTitle={item.name} leftSubtitle={item.endpoint} rightTitle={item.status} rightSubtitle="Integration" />
           ))}
         </div>

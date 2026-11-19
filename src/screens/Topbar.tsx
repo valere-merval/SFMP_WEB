@@ -1,27 +1,33 @@
 import { Pill } from '../components/ui';
-import type { EventView } from '../data/demo';
+import type { EventView } from '../types';
 
-export function Topbar({ hero, onTab, tab }: { hero: EventView; tab: 'fan' | 'operations' | 'admin'; onTab: (tab: 'fan' | 'operations' | 'admin') => void }) {
+export function Topbar({ hero, onTab, tab }: { hero: EventView | null; tab: 'fan' | 'operations' | 'admin'; onTab: (tab: 'fan' | 'operations' | 'admin') => void }) {
+  const heroStatus = hero?.status ?? 'Loading';
+  const heroName = hero?.name ?? 'Live catalog loading';
+  const heroVenue = hero ? `${hero.venue}, ${hero.city}` : 'Waiting for backend data';
+  const heroAttendance = hero?.expectedAttendance?.toLocaleString('en-US') ?? '—';
+  const heroDate = hero?.date ?? '—';
+
   return (
     <>
       <header className="topbar">
         <div>
           <p className="eyebrow">SMART FAN MOBILITY</p>
           <h1>Smart fan mobility for matchday travel</h1>
-          <p className="lead">Premium mobile fan journeys, operations command and administration with the Stitch visual system.</p>
+          <p className="lead">Premium mobile fan journeys, operations command and administration with a single live backend catalog.</p>
         </div>
         <div className="hero-card">
-          <div className="hero-topline"><Pill>{hero.status}</Pill><Pill subtle>LIVE</Pill></div>
-          <h2>{hero.name}</h2>
-          <p>{hero.venue}, {hero.city}</p>
+          <div className="hero-topline"><Pill>{heroStatus}</Pill><Pill subtle>LIVE</Pill></div>
+          <h2>{heroName}</h2>
+          <p>{heroVenue}</p>
           <div className="stats-grid">
-            <div><strong>{hero.expectedAttendance.toLocaleString('en-US')}</strong><span>fans expected</span></div>
-            <div><strong>{hero.date}</strong><span>event date</span></div>
+            <div><strong>{heroAttendance}</strong><span>fans expected</span></div>
+            <div><strong>{heroDate}</strong><span>event date</span></div>
             <div><strong>Gate 34</strong><span>east hub</span></div>
           </div>
           <div className="cta-row">
-            <button className="primary">Plan my journey</button>
-            <button className="secondary">View event details</button>
+            <button className="primary" type="button">Plan my journey</button>
+            <button className="secondary" type="button">View event details</button>
           </div>
         </div>
       </header>

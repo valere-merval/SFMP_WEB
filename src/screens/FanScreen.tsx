@@ -1,14 +1,15 @@
 import { Card, MapFrame, MiniCard, Metric } from '../components/ui';
 import { googleMapsDirectionsUrl, googleMapsEmbedUrl, googleMapsSearchUrl } from '../lib/maps';
-import type { LiveData } from '../types';
+import type { CatalogData } from '../types';
 
-export function FanScreen({ data }: { data: LiveData }) {
-  const venue = `${data.events[0].venue}, ${data.events[0].city}`;
+export function FanScreen({ catalog }: { catalog: CatalogData }) {
+  const venue = `${catalog.events[0].venue}, ${catalog.events[0].city}`;
+
   return (
     <section className="section-grid">
       <Card title="Transit direct lines" subtitle="Matchday routing" wide>
         <div className="grid-2">
-          {data.mobilityOptions.map((item) => (
+          {catalog.mobilityOptions.map((item) => (
             <MiniCard key={item.id} title={item.mode} subtitle={item.highlight} meta={`${item.duration} · ${item.price}`} />
           ))}
         </div>
@@ -16,7 +17,7 @@ export function FanScreen({ data }: { data: LiveData }) {
 
       <Card title="Perimeter live telemetry" subtitle="Operations feed">
         <div className="metric-grid">
-          {data.operationsMetrics.map((item) => (
+          {catalog.operationsMetrics.map((item) => (
             <Metric key={item.id} label={item.label} value={item.value} trend={item.trend} />
           ))}
         </div>

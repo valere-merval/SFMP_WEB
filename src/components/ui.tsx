@@ -1,6 +1,7 @@
+import type { ReactNode } from 'react';
 import './ui.css';
 
-export function Card({ title, subtitle, children, wide = false }: { title: string; subtitle: string; children: React.ReactNode; wide?: boolean }) {
+export function Card({ title, subtitle, children, wide = false }: { title: string; subtitle: string; children: ReactNode; wide?: boolean }) {
   return (
     <article className={wide ? 'card wide' : 'card'}>
       <div className="card-head">
@@ -49,7 +50,7 @@ export function Metric({ label, value, trend }: { label: string; value: string; 
   );
 }
 
-export function Pill({ children, subtle = false }: { children: React.ReactNode; subtle?: boolean }) {
+export function Pill({ children, subtle = false }: { children: ReactNode; subtle?: boolean }) {
   return <span className={subtle ? 'pill subtle' : 'pill'}>{children}</span>;
 }
 
