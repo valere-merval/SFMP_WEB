@@ -49,14 +49,39 @@ const emptyMatchForm = {
   imageUrl: '',
 };
 
+const transportTypeOptions = ['Taxi', 'VTC', 'Bus', 'Train', 'Shuttle', 'E-Scooter'];
+const transportStatusOptions = ['Pending review', 'Active', 'Paused', 'Suspended'];
+
+const emptyTransportForm = {
+  matchId: '',
+  providerType: 'Taxi',
+  displayName: '',
+  driverName: '',
+  vehicleLabel: '',
+  vehiclePlate: '',
+  city: '',
+  country: '',
+  zone: '',
+  status: 'Pending review',
+  active: true,
+  permitUrl: '',
+  registrationUrl: '',
+  driverLicenseUrl: '',
+  vehicleImageUrl: '',
+  notes: '',
+  publicNotes: '',
+};
+
 type ImageUploadFieldProps = {
   label: string;
   value: string;
   onUrlChange: (url: string) => void;
   helper?: string;
+  accept?: string;
+  preview?: boolean;
 };
 
-function ImageUploadField({ label, value, onUrlChange, helper }: ImageUploadFieldProps) {
+function ImageUploadField({ label, value, onUrlChange, helper, accept = 'image/*', preview = true }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -80,9 +105,9 @@ function ImageUploadField({ label, value, onUrlChange, helper }: ImageUploadFiel
   return (
     <label className="auth-label wide-field">
       {label}
-      <input className="auth-input auth-file" type="file" accept="image/*" onChange={handleFile} />
-      <input className="auth-input" value={value} readOnly placeholder="Upload an image to populate the URL" />
-      {value ? <img className="admin-preview" src={value} alt={label} /> : null}
+      <input className="auth-input auth-file" type="file" accept={accept} onChange={handleFile} />
+      <input className="auth-input" value={value} readOnly placeholder={accept.includes('.pdf') ? 'Upload a file to populate the URL' : 'Upload an image to populate the URL'} />
+      {preview && value && /\.(png|jpe?g|webp|gif|svg)$/i.test(value) ? <img className="admin-preview" src={value} alt={label} /> : null}
       <small className="auth-help">{uploading ? 'Uploading to MinIO…' : error ?? helper ?? fileName}</small>
     </label>
   );
@@ -194,6 +219,81 @@ function SearchableField({
                 <button key={option.value} type="button" className="searchable-dropdown-item" onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)}>
                   <span>{option.label}</span>
                   {option.label !== option.value ? <small>{option.value}</small> : null}
+                </button>
+              ))
+            ) : (
+              <div className="searchable-dropdown-empty">No result</div>
+            )}
+          </div>
+        ) : null}
+      </div>
+      {helper ? <small className="auth-help">{helper}</small> : null}
+    </label>
+  );
+}
+
+function SearchableValueField({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  helper,
+  wide = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { label: string; value: string }[];
+  placeholder: string;
+  helper?: string;
+  wide?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value);
+  const id = useMemo(() => `${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-value-options`, [label]);
+  const filteredOptions = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    return options
+      .filter((option) => !term || option.label.toLowerCase().includes(term) || option.value.toLowerCase().includes(term))
+      .sort((left, right) => left.label.localeCompare(right.label));
+  }, [options, query]);
+
+  const choose = (option: { label: string; value: string }) => {
+    onChange(option.value);
+    setQuery(option.label);
+    setOpen(false);
+  };
+
+  return (
+    <label className={`auth-label${wide ? ' wide-field' : ''}`}>
+      {label}
+      <div className="searchable-dropdown">
+        <input
+          className="auth-input"
+          value={open ? query : value}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+            onChange(event.target.value);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 160)}
+          placeholder={placeholder}
+          role="combobox"
+          aria-expanded={open}
+          aria-controls={id}
+          autoComplete="new-password"
+          autoCorrect="off"
+          spellCheck={false}
+        />
+        {open ? (
+          <div className="searchable-dropdown-menu" id={id} role="listbox">
+            {filteredOptions.length ? (
+              filteredOptions.map((option) => (
+                <button key={option.value} type="button" className="searchable-dropdown-item" onMouseDown={(event) => event.preventDefault()} onClick={() => choose(option)}>
+                  <span>{option.label}</span>
+                  {option.value ? <small>{option.value}</small> : null}
                 </button>
               ))
             ) : (
@@ -328,10 +428,22 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
   const users = catalog.users ?? [];
   const auditEntries = catalog.auditEntries ?? [];
   const eventCatalogs = catalog.eventCatalogs ?? [];
+  const transportProviders = catalog.transportProviders ?? [];
+  const matches = catalog.matches ?? [];
+  const transportMatchOptions = matches.map((match) => ({
+    label: `${match.homeTeam} vs ${match.awayTeam} · ${match.city}`,
+    value: match.id,
+  }));
 
   const [catalogForm, setCatalogForm] = useState(emptyCatalogForm);
   const [selectedSports, setSelectedSports] = useState<string[]>(['Football']);
   const [matchForm, setMatchForm] = useState(emptyMatchForm);
+  const [transportForm, setTransportForm] = useState(emptyTransportForm);
+  const transportCountry = countryOptions.find((entry) => entry.label.toLowerCase() === transportForm.country.toLowerCase() || entry.value.toLowerCase() === transportForm.country.toLowerCase());
+  const transportCityOptions = useMemo(() => {
+    if (!transportCountry) return [];
+    return (City.getCitiesOfCountry(transportCountry.value) ?? []).map((entry) => ({ label: entry.name, value: entry.name }));
+  }, [transportCountry]);
   const [savingCatalog, setSavingCatalog] = useState(false);
   const [savingMatch, setSavingMatch] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -394,6 +506,40 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
       onRefresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Unable to create match.');
+    } finally {
+      setSavingMatch(false);
+    }
+  };
+
+  const submitTransport = async (event: FormEvent) => {
+    event.preventDefault();
+    setSavingMatch(true);
+    setMessage(null);
+    if (!transportForm.matchId) {
+      setMessage('Please choose the match this operator should serve.');
+      setSavingMatch(false);
+      return;
+    }
+    if (!transportForm.displayName || !transportForm.driverName || !transportForm.vehicleLabel || !transportForm.vehiclePlate) {
+      setMessage('Please fill the driver and vehicle basics before saving the operator.');
+      setSavingMatch(false);
+      return;
+    }
+    if (!transportForm.permitUrl || !transportForm.registrationUrl || !transportForm.driverLicenseUrl) {
+      setMessage('Please upload the permit, registration card, and driver license images or PDFs.');
+      setSavingMatch(false);
+      return;
+    }
+    try {
+      await postJson('/api/v1/transport-providers', {
+        ...transportForm,
+        active: transportForm.active,
+      });
+      setTransportForm(emptyTransportForm);
+      setMessage('Transport operator registered for the selected match.');
+      onRefresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Unable to create transport operator.');
     } finally {
       setSavingMatch(false);
     }
@@ -560,6 +706,137 @@ export function AdminScreen({ catalog, onRefresh }: { catalog: CatalogData; onRe
             <button className="primary-button" type="submit" disabled={savingMatch}>{savingMatch ? 'Saving...' : 'Create match'}</button>
           </div>
         </form>
+      </Card>
+
+      <Card title="Register transport operator" subtitle="Taxi and VTC onboarding" wide>
+        <form className="list-stack" onSubmit={submitTransport}>
+          <div className="form-grid">
+            <SearchableValueField
+              label="Match"
+              value={transportForm.matchId}
+              onChange={(value) => setTransportForm({ ...transportForm, matchId: value })}
+              options={transportMatchOptions}
+              placeholder="Search the match to serve"
+              helper="Choose the exact match the operator will serve."
+              wide
+            />
+            <label className="auth-label">
+              Operator type
+              <select className="auth-input auth-select" value={transportForm.providerType} onChange={(e) => setTransportForm({ ...transportForm, providerType: e.target.value })}>
+                {transportTypeOptions.map((type) => <option key={type} value={type}>{type}</option>)}
+              </select>
+            </label>
+            <label className="auth-label">
+              Status
+              <select className="auth-input auth-select" value={transportForm.status} onChange={(e) => setTransportForm({ ...transportForm, status: e.target.value })}>
+                {transportStatusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
+              </select>
+            </label>
+            <label className="auth-label">
+              Operator name
+              <input className="auth-input" value={transportForm.displayName} onChange={(e) => setTransportForm({ ...transportForm, displayName: e.target.value })} placeholder="South Gate Taxi 12" required />
+            </label>
+            <label className="auth-label">
+              Driver name
+              <input className="auth-input" value={transportForm.driverName} onChange={(e) => setTransportForm({ ...transportForm, driverName: e.target.value })} placeholder="M. Silva" required />
+            </label>
+            <label className="auth-label">
+              Vehicle label
+              <input className="auth-input" value={transportForm.vehicleLabel} onChange={(e) => setTransportForm({ ...transportForm, vehicleLabel: e.target.value })} placeholder="Mercedes Vito · 8 seats" required />
+            </label>
+            <label className="auth-label">
+              Vehicle plate
+              <input className="auth-input" value={transportForm.vehiclePlate} onChange={(e) => setTransportForm({ ...transportForm, vehiclePlate: e.target.value })} placeholder="M-123-AB" required />
+            </label>
+            <SearchableField
+              label="Country"
+              value={transportForm.country}
+              onChange={(value) => setTransportForm({ ...transportForm, country: value })}
+              options={countryOptions}
+              placeholder="Search a country"
+              helper="Match the provider country to the event region."
+            />
+            <SearchableField
+              label="City"
+              value={transportForm.city}
+              onChange={(value) => setTransportForm({ ...transportForm, city: value })}
+              options={transportCityOptions}
+              placeholder={transportCountry ? `Search a city in ${transportCountry.label}` : 'Select a country first'}
+              helper={transportCountry ? `Cities are filtered for ${transportCountry.label}.` : 'Pick a country first to unlock city options.'}
+            />
+            <label className="auth-label wide-field">
+              Zone / pickup area
+              <input className="auth-input" value={transportForm.zone} onChange={(e) => setTransportForm({ ...transportForm, zone: e.target.value })} placeholder="South VTC zone, Gate 34" required />
+            </label>
+            <ImageUploadField
+              label="Driver license"
+              value={transportForm.driverLicenseUrl}
+              onUrlChange={(url) => setTransportForm({ ...transportForm, driverLicenseUrl: url })}
+              helper="Upload the driver's permit or license image/PDF."
+              accept="image/*,.pdf"
+              preview={false}
+            />
+            <ImageUploadField
+              label="Vehicle registration"
+              value={transportForm.registrationUrl}
+              onUrlChange={(url) => setTransportForm({ ...transportForm, registrationUrl: url })}
+              helper="Upload the vehicle card or registration document."
+              accept="image/*,.pdf"
+              preview={false}
+            />
+            <ImageUploadField
+              label="Operating permit"
+              value={transportForm.permitUrl}
+              onUrlChange={(url) => setTransportForm({ ...transportForm, permitUrl: url })}
+              helper="Upload the permit showing the operator can serve this match."
+              accept="image/*,.pdf"
+              preview={false}
+            />
+            <ImageUploadField
+              label="Vehicle image"
+              value={transportForm.vehicleImageUrl}
+              onUrlChange={(url) => setTransportForm({ ...transportForm, vehicleImageUrl: url })}
+              helper="Optional vehicle photo shown only to admins."
+              accept="image/*"
+            />
+            <label className="auth-label wide-field">
+              Notes
+              <input className="auth-input" value={transportForm.notes} onChange={(e) => setTransportForm({ ...transportForm, notes: e.target.value })} placeholder="Internal security notes, shift duration, vehicle color" />
+            </label>
+            <label className="auth-label wide-field">
+              Public note
+              <input className="auth-input" value={transportForm.publicNotes} onChange={(e) => setTransportForm({ ...transportForm, publicNotes: e.target.value })} placeholder="Visible to fans: trusted operator, matching vehicle number" />
+            </label>
+            <label className="auth-label wide-field ticket-block">
+              <div className="ticket-toggle">
+                <span>Operator active for the match</span>
+                <input type="checkbox" checked={transportForm.active} onChange={(e) => setTransportForm({ ...transportForm, active: e.target.checked })} />
+              </div>
+              <small className="auth-help">Only the public operator summary is exposed to fans.</small>
+            </label>
+          </div>
+          <div className="cta-row">
+            <button className="primary-button" type="submit" disabled={savingMatch}>{savingMatch ? 'Saving...' : 'Register operator'}</button>
+          </div>
+        </form>
+      </Card>
+
+      <Card title="Registered operators" subtitle="Public and admin visibility" wide>
+        <div className="list-stack">
+          {transportProviders.length ? (
+            transportProviders.map((provider) => (
+              <Row
+                key={provider.id}
+                leftTitle={`${provider.displayName} · ${provider.providerType}`}
+                leftSubtitle={`${provider.vehicleLabel} · ${provider.zone}`}
+                rightTitle={provider.matchTitle || provider.matchId}
+                rightSubtitle={provider.status}
+              />
+            ))
+          ) : (
+            <div className="empty-card"><strong>No operators yet</strong><p>Taxi and VTC registrations will appear here after the first submission.</p></div>
+          )}
+        </div>
       </Card>
 
       <Card title="Delivery roadmap" subtitle="Version plan" wide>

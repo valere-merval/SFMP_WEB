@@ -19,6 +19,16 @@ export type EventCatalogView = {
   eventCount: number;
 };
 
+export type MatchView = {
+  id: string;
+  catalogId: string;
+  homeTeam: string;
+  awayTeam: string;
+  city: string;
+  venue: string;
+  date: string;
+};
+
 export type MobilityOptionView = {
   id: string;
   mode: string;
@@ -126,9 +136,24 @@ export type InsightView = {
   action: string;
 };
 
+export type TransportProviderView = {
+  id: string;
+  matchId: string;
+  matchTitle: string;
+  providerType: string;
+  displayName: string;
+  vehicleLabel: string;
+  zone: string;
+  status: string;
+  active: boolean;
+  city: string;
+  country: string;
+};
+
 export type CatalogData = {
   events: EventView[];
   eventCatalogs: EventCatalogView[];
+  matches: MatchView[];
   mobilityOptions: MobilityOptionView[];
   bookings: BookingView[];
   operationsMetrics: MetricView[];
@@ -145,4 +170,5 @@ export type CatalogData = {
   traffic: TrafficView[];
   consents: ConsentView[];
   insights: InsightView[];
+  transportProviders: TransportProviderView[];
 };

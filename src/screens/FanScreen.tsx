@@ -6,17 +6,73 @@ export function FanScreen({ catalog }: { catalog: CatalogData }) {
   const events = catalog.events ?? [];
   const mobilityOptions = catalog.mobilityOptions ?? [];
   const operationsMetrics = catalog.operationsMetrics ?? [];
+  const transportProviders = catalog.transportProviders ?? [];
   const firstEvent = events[0] ?? null;
   const venue = firstEvent ? `${firstEvent.venue}, ${firstEvent.city}` : 'Estadio Metropolitano, Madrid';
 
   return (
     <section className="section-grid">
+      <Card title="Match information" subtitle="Hub preview" wide>
+        {firstEvent ? (
+          <div className="hero-card fan-match-hero">
+            <div className="hero-topline">
+              <span className="tag lime">KICKOFF LIVE</span>
+              <span className="tag">Gate 34</span>
+              <span className="tag">Sector 212</span>
+            </div>
+            <div className="match-title-row">
+              <strong className="match-team-line">{firstEvent.name}</strong>
+              <span className="match-status-pill">Open</span>
+            </div>
+            <div className="match-stats-grid">
+              <div>
+                <strong>KICKOFF</strong>
+                <span>{firstEvent.date}</span>
+              </div>
+              <div>
+                <strong>WEATHER</strong>
+                <span>22°C Clear</span>
+              </div>
+              <div>
+                <strong>ACCESS</strong>
+                <span>Live gate routing</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="empty-card">
+            <strong>No event selected yet</strong>
+            <p>Create an event and match in the admin area to unlock live wayfinding.</p>
+          </div>
+        )}
+      </Card>
+
       <Card title="Transit direct lines" subtitle="Matchday routing" wide>
-        <div className="grid-2">
+        <div className="grid-2 transit-grid">
           {mobilityOptions.map((item) => (
             <MiniCard key={item.id} title={item.mode} subtitle={item.highlight} meta={`${item.duration} · ${item.price}`} />
           ))}
         </div>
+      </Card>
+
+      <Card title="Registered operators" subtitle="Taxi and VTC" wide>
+        {transportProviders.length ? (
+          <div className="grid-2 provider-grid">
+            {transportProviders.map((provider) => (
+              <div key={provider.id} className="mini-card provider-card">
+                <strong>{provider.displayName}</strong>
+                <span>{provider.providerType} · {provider.zone}</span>
+                <em>{provider.vehicleLabel}</em>
+                <small>{provider.matchTitle || 'Match registration active'}</small>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-card">
+            <strong>No operators published yet</strong>
+            <p>Taxi and VTC providers will appear here once they register for the selected match.</p>
+          </div>
+        )}
       </Card>
 
       <Card title="Perimeter live telemetry" subtitle="Operations feed">
